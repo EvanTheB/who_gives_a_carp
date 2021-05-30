@@ -36,6 +36,10 @@ def words(quad):
 			if word in dictionary:
 				# print(word)
 				ret.append(word)
+			elif word[-1] in "?!" and word[:-1] in dictionary:
+				ret.append(word)
+			# elif word[0] in "#" and word[1:] in dictionary:
+			# 	ret.append(word)
 	return set(ret)
 
 # mapping from 4 tps to words they spell
@@ -57,6 +61,8 @@ for quad in quads:
 # exit(1)
 
 def out_wordlist(words):
+	if not words:
+		print("error: nothing found", file=sys.stderr)
 	print("\n".join(words))
 	# print(len(words))
 
