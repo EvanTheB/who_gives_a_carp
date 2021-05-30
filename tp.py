@@ -58,7 +58,7 @@ for quad in quads:
 
 def out_wordlist(words):
 	print("\n".join(words))
-	print(len(words))
+	# print(len(words))
 
 def out_tp(tp):
 	# todo print words in right order
@@ -70,7 +70,7 @@ def get_remaining_words(used_words):
 	all_ = set(quadwords)
 	possible = set()
 
-	# list of possible quads for each word
+	# list of quad options for each word
 	used = [
 		[quad for quad, words in quadwords.items() if word in words]
 		for word in used_words
@@ -84,7 +84,7 @@ def get_remaining_words(used_words):
 			# skip if we have re-used some tp
 			continue
 		# Add this iterations unused quads
-		new_tps = set(range(12)) - used_tps
+		new_tps = sorted(set(range(12)) - used_tps)
 		possible = set.union(
 			possible,
 			set(itertools.combinations(new_tps, 4))
@@ -93,8 +93,6 @@ def get_remaining_words(used_words):
 		# if we found them all early abort
 		if len(possible) == len(all_):
 			break
-
-	# print(possible)
 
 	return set.union(*list(words for quad, words in quadwords.items() if quad in possible))
 
