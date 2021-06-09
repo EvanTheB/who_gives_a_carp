@@ -24,8 +24,17 @@ dictionary = set.union(dictionary, [
 	"lulu",
 ])
 
+def ints_to_quads(ints):
+	return (list(itertools.combinations(ints, 5))
+	 + list(itertools.combinations(ints, 4))
+	 + list(itertools.combinations(ints, 3))
+	 # + list(itertools.combinations(ints, 2))
+	 # + list(itertools.combinations(ints, 1))
+	)
+
 # this is all the 12 choose 4 comboes of tp rolls
-quads = list(itertools.combinations(list(range(12)), 4))
+# + the other lengths, still called quads
+quads = ints_to_quads(list(range(len(tps))))
 
 def words(quad):
 	ret = []
@@ -50,9 +59,9 @@ for quad in quads:
 allwords = set.union(*list(quadwords.values()))
 
 # mapping from a quad to the other unused quads
-quadtoquads = {}
-for quad in quads:
-	quadtoquads[quad] = list(itertools.combinations(set(range(12)) - set(quad), 4))
+# quadtoquads = {}
+# for quad in quads:
+# 	quadtoquads[quad] = list(itertools.combinations(set(range(12)) - set(quad), 4))
 
 # print(len(allwords)) # 1727
 # for less_one in itertools.combinations(list(quadwords.values()), len(quadwords) - 1):
@@ -93,7 +102,7 @@ def get_remaining_words(used_words):
 		new_tps = sorted(set(range(12)) - used_tps)
 		possible = set.union(
 			possible,
-			set(itertools.combinations(new_tps, 4))
+			set(ints_to_quads(new_tps))
 		)
 
 		# if we found them all early abort
@@ -101,6 +110,28 @@ def get_remaining_words(used_words):
 			break
 
 	return set.union(*list(words for quad, words in quadwords.items() if quad in possible))
+
+def how_to_make(used_words):
+	# list of quad options for each word
+	used = [
+		[quad for quad, words in quadwords.items() if word in words]
+		for word in used_words
+	]
+	# print(used)
+
+	# for every way to make the words from quads
+	for used_quads in itertools.product(*used):
+		used_tps = set.union(*[set(u) for u in used_quads])
+		if len(used_tps) != len("".join(used_words)):
+			# skip if we have re-used some tp
+			continue
+		for quad in used_quads:
+			out_tp(quad)
+
+		return
+
+	print("error, cant make those words")
+
 
 import sys
 # phrases are A B C
@@ -125,16 +156,5 @@ elif len(sys.argv) == 4:
 	A = sys.argv[1]
 	B = sys.argv[2]
 	C = sys.argv[3]
-
-	As = [quad for quad,words in quadwords.items() if A in words]
-	Bs = [quad for quad,words in quadwords.items() if B in words]
-	Cs = [quad for quad,words in quadwords.items() if C in words]
-	# for every way to make "A B C"
-	for A, B, C in itertools.product(As, Bs, Cs):
-		if A == B or B == C or A == C:
-			continue
-		out_tp(A)
-		out_tp(B)
-		out_tp(C)
-		break
+	how_to_make([A,B,C])
 
