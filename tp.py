@@ -1,28 +1,6 @@
 import itertools
 
-tps = [
-	"xqr",
-	"obk",
-	"#hw",
-	"y&t",
-	"hsi",
-	"ayg",
-	"dcf",
-	"mez",
-	"l?p",
-	"auv",
-	"!nr",
-	"pej",
-]
-
-dictionary = set(
-	open("/usr/share/dict/words.pre-dictionaries-common").read().split("\n")
-)
-
-dictionary = set.union(dictionary, [
-	"evan",
-	"lulu",
-])
+from tpconf import tps, dictionary, alpha, letter_to_tp
 
 def ints_to_quads(ints):
 	return (list(itertools.combinations(ints, 5))
@@ -36,6 +14,8 @@ def ints_to_quads(ints):
 # + the other lengths, still called quads
 quads = ints_to_quads(list(range(len(tps))))
 
+# all the words that can be made from a quad
+# by considering all permutations
 def words(quad):
 	ret = []
 	for order in itertools.permutations(quad):
@@ -51,23 +31,25 @@ def words(quad):
 			# 	ret.append(word)
 	return set(ret)
 
-# mapping from 4 tps to words they spell
+# by trying to spell each word
+def words2(quad):
+	def canspell(suffix, tps_left):
+		if suffix == "":
+			return True
+		for next_tp in tps_left & letter_to_tp[suffix[0]]:
+			if canspell(suffix[1:], tps_left - set([next_tp])):
+				return True
+		return False
+
+	return set([w for w in dictionary if all(c in alpha for c in w) and canspell(w, set(quad))])
+
+# mapping from quad to the words they can spell
 quadwords = {}
 for quad in quads:
 	quadwords[quad] = words(quad)
 
+# all the possible words
 allwords = set.union(*list(quadwords.values()))
-
-# mapping from a quad to the other unused quads
-# quadtoquads = {}
-# for quad in quads:
-# 	quadtoquads[quad] = list(itertools.combinations(set(range(12)) - set(quad), 4))
-
-# print(len(allwords)) # 1727
-# for less_one in itertools.combinations(list(quadwords.values()), len(quadwords) - 1):
-# 	# these are all at or slightly under 1727, not many missing words
-# 	print(len(set.union(*less_one)))
-# exit(1)
 
 def out_wordlist(words):
 	if not words:
