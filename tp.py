@@ -46,18 +46,45 @@ def words2():
 	wordquads = defaultdict(set)
 	# quad to words it spells
 	quadwords = defaultdict(set)
+
+
+	# same but with bitset
+	iletter_to_tp = {}
+	for k in alpha:
+		iletter_to_tp[k] = 0
+		for i, tp in enumerate(tps):
+			if k in tp:
+				iletter_to_tp[k] |= 1 << i
+
+	bits_to_quads = {}
+	for i in range(1 << len(tps)):
+		toadd = list()
+		j = i
+		while j > 0:
+			ffs = (j & (-j)).bit_length() - 1
+			j -= j & (-j)
+			toadd.append(ffs)
+		bits_to_quads[i] = frozenset(toadd)
+
+
+	iall_tps = (1 << len(tps)) - 1
 	def canspell(word, suffix, tps_left):
 		if suffix == "":
-			used_tps = frozenset(all_tps - tps_left)
-			assert(len(used_tps) == len(word))
-			wordquads[word].add(used_tps)
-			quadwords[used_tps].add(word)
+			used_tps = iall_tps & (~tps_left)
+			# assert(len(used_tps) == len(word))
+			wordquads[word].add(bits_to_quads[used_tps])
+			quadwords[bits_to_quads[used_tps]].add(word)
 			return
-		for next_tp in tps_left & letter_to_tp[suffix[0]]:
-			canspell(word, suffix[1:], tps_left.difference([next_tp]))
+		# mask to only tps with next letter
+		next_tps = tps_left & iletter_to_tp[suffix[0]]
+		# foreach set bit
+		while next_tps > 0:
+			next_bit = next_tps & (-next_tps)
+			next_tps -= next_bit
+			canspell(word, suffix[1:], tps_left - next_bit)
 
 	for word in dictionary:
-		canspell(word, word, all_tps)
+		canspell(word, word, iall_tps)
 
 	return wordquads, quadwords
 
