@@ -80,10 +80,20 @@ def out_wordlist(words):
 	print("\n".join(words))
 	# print(len(words))
 
-def out_tp(tp):
-	# todo print words in right order
-	for t in tp:
-		print(tps[t])
+def out_tp(tp, word):
+	tp = set(tp)
+	def howspell(suffix, tps_used):
+		if suffix == "":
+			assert(len(tps_used) == len(word))
+			return tps_used
+		for next_tp in (tp - set(tps_used)) & letter_to_tp[suffix[0]]:
+			r = howspell(suffix[1:], tps_used + [next_tp])
+			if r:
+				return r
+		return False
+	spell = howspell(word, [])
+	for l in spell:
+		print(tps[l])
 	print()
 
 def get_remaining_words(used_words):
@@ -133,13 +143,14 @@ def how_to_make(used_words):
 		if len(used_tps) != len("".join(used_words)):
 			# skip if we have re-used some tp
 			continue
-		for quad in used_quads:
-			out_tp(quad)
+		for quad, word in zip(used_quads, used_words):
+			out_tp(quad, word)
 
 		return
 
 	print("error, cant make those words")
 
+# how_to_make(["lexicography"])
 
 import sys
 # phrases are A B C
