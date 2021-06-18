@@ -31,3 +31,5 @@ letter_to_tp = {
 	k: set(q for q in range(len(tps)) if k in tps[q])
 	for k in alpha
 }
+
+all_tps = set(range(len(tps)))

@@ -1,6 +1,14 @@
 import itertools
+from collections import defaultdict
 
-from tpconf import tps, dictionary, alpha, letter_to_tp
+from tpconf import tps, dictionary, alpha, letter_to_tp, all_tps
+
+# return set of frozensets
+def powerset(iterable):
+    "powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)"
+    s = list(iterable)
+    return set(frozenset(x) for x in
+    	itertools.chain.from_iterable(itertools.combinations(s, r) for r in range(len(s)+1)))
 
 def ints_to_quads(ints):
 	return (list(itertools.combinations(ints, 5))
@@ -32,24 +40,39 @@ def words(quad):
 	return set(ret)
 
 # by trying to spell each word
-def words2(quad):
-	def canspell(suffix, tps_left):
+def words2():
+	# mapping from word to what quads spell it
+	# use sets because multiple ways to spell a word from a quad
+	wordquads = defaultdict(set)
+	# quad to words it spells
+	quadwords = defaultdict(set)
+	def canspell(word, suffix, tps_left):
 		if suffix == "":
-			return True
+			used_tps = frozenset(all_tps - tps_left)
+			assert(len(used_tps) == len(word))
+			wordquads[word].add(used_tps)
+			quadwords[used_tps].add(word)
+			return
 		for next_tp in tps_left & letter_to_tp[suffix[0]]:
-			if canspell(suffix[1:], tps_left - set([next_tp])):
-				return True
-		return False
+			canspell(word, suffix[1:], tps_left.difference([next_tp]))
 
-	return set([w for w in dictionary if all(c in alpha for c in w) and canspell(w, set(quad))])
+	for word in dictionary:
+		if all(c in alpha for c in word):
+			canspell(word, word, all_tps)
+	return wordquads, quadwords
+
+# print(len(quads)) # 1507
 
 # mapping from quad to the words they can spell
-quadwords = {}
-for quad in quads:
-	quadwords[quad] = words(quad)
+# quadwords = {}
+# for quad in quads:
+# 	quadwords[quad] = words(quad)
+
+wordquads, quadwords = words2()
 
 # all the possible words
 allwords = set.union(*list(quadwords.values()))
+# print(len(allwords)) # 15367
 
 def out_wordlist(words):
 	if not words:
@@ -64,16 +87,17 @@ def out_tp(tp):
 	print()
 
 def get_remaining_words(used_words):
-	all_ = set(quadwords)
-	possible = set()
+	possible_quads = set()
+	possible_tps = set()
 
 	# list of quad options for each word
 	used = [
-		[quad for quad, words in quadwords.items() if word in words]
+		wordquads[word]
 		for word in used_words
 	]
 	# print(used)
 
+	#
 	# for every way to make the words from quads
 	for used_quads in itertools.product(*used):
 		used_tps = set.union(*[set(u) for u in used_quads])
@@ -81,17 +105,19 @@ def get_remaining_words(used_words):
 			# skip if we have re-used some tp
 			continue
 		# Add this iterations unused quads
-		new_tps = sorted(set(range(12)) - used_tps)
-		possible = set.union(
-			possible,
-			set(ints_to_quads(new_tps))
-		)
+		unused_tps = frozenset(all_tps - used_tps)
+
+		possible_quads.add(unused_tps)
+		possible_tps |= unused_tps
 
 		# if we found them all early abort
-		if len(possible) == len(all_):
+		if len(possible_tps) == len(all_tps):
 			break
+	all_possible_quads = set.union(*[powerset(pq) for pq in possible_quads])
+	# print(possible_quads)
+	# print(all_possible_quads)
 
-	return set.union(*list(words for quad, words in quadwords.items() if quad in possible))
+	return set.union(*[quadwords[quad] for quad in all_possible_quads])
 
 def how_to_make(used_words):
 	# list of quad options for each word
