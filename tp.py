@@ -57,7 +57,7 @@ def words2():
 			canspell(word, suffix[1:], tps_left.difference([next_tp]))
 
 	for word in dictionary:
-		if all(c in alpha for c in word):
+		if all(c in alpha for c in word) and len(tps) >= len(word) > 2:
 			canspell(word, word, all_tps)
 	return wordquads, quadwords
 
