@@ -14,19 +14,23 @@ tps = [
 ]
 lentp = len(tps)
 
-dictionary = set(
-	w for w in
-	open("/usr/share/dict/words.pre-dictionaries-common").read().lower().split("\n")
-	if w.isascii() and w.isalpha() and lentp >= len(w) > 2
-)
+if "isascii" not in str.__dict__:
+	isascii = lambda x: all(ord('a') <= ord(c) <= ord('Z') for c in x)
+else:
+	isascii = str.isascii
 
-dictionary = set.union(dictionary, [
+
+dictionary = set.union({
+	w.lower() for w in
+	open("/usr/share/dict/words.pre-dictionaries-common").read().split("\n")
+	if isascii(w) and w.isalpha() and lentp >= len(w) > 2
+	}, {
 	"evan",
 	"lulu",
-        "louise",
-        "arlo",
-        "lou",
-])
+	"louise",
+	"arlo",
+	"lou",
+})
 
 alpha = set("abcdefghijklmnopqrstuvwxyz")
 
