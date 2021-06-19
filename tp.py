@@ -25,6 +25,11 @@ quads = ints_to_quads(list(range(len(tps))))
 # all the words that can be made from a quad
 # by considering all permutations
 def words(quad):
+	"""
+	time is sum(k=1, k=n)(n choose k * k!)
+	= n! / (n-1)! + ... + n! / 0!
+	n = 12, ~1e9
+	"""
 	ret = []
 	for order in itertools.permutations(quad):
 		quad_tps = [tps[i] for i in order]
@@ -41,6 +46,10 @@ def words(quad):
 
 # by trying to spell each word
 def words2():
+	"""
+	time is #words * #letters * #tps
+	~1e5 * ~6 * 12 = 1e7
+	"""
 	# mapping from word to what quads spell it
 	# use sets because multiple ways to spell a word from a quad
 	wordquads = defaultdict(set)
