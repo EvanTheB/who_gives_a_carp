@@ -57,8 +57,8 @@ def words2():
 			canspell(word, suffix[1:], tps_left.difference([next_tp]))
 
 	for word in dictionary:
-		if all(c in alpha for c in word) and len(tps) >= len(word) > 2:
-			canspell(word, word, all_tps)
+		canspell(word, word, all_tps)
+
 	return wordquads, quadwords
 
 # print(len(quads)) # 1507
@@ -99,6 +99,7 @@ def out_tp(tp, word):
 def get_remaining_words(used_words):
 	possible_quads = set()
 	possible_tps = set()
+	len_used_words = len("".join(used_words))
 
 	# list of quad options for each word
 	used = [
@@ -111,7 +112,7 @@ def get_remaining_words(used_words):
 	# for every way to make the words from quads
 	for used_quads in itertools.product(*used):
 		used_tps = set.union(*[set(u) for u in used_quads])
-		if len(used_tps) != len("".join(used_words)):
+		if len(used_tps) != len_used_words:
 			# skip if we have re-used some tp
 			continue
 		# Add this iterations unused quads

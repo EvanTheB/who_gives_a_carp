@@ -12,9 +12,12 @@ tps = [
 	"!nr",
 	"pej",
 ]
+lentp = len(tps)
 
 dictionary = set(
+	w for w in
 	open("/usr/share/dict/words.pre-dictionaries-common").read().lower().split("\n")
+	if w.isascii() and w.isalpha() and lentp >= len(w) > 2
 )
 
 dictionary = set.union(dictionary, [
